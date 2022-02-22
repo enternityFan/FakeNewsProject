@@ -1,0 +1,2 @@
+# FakeNewsProject
+这个仓库用来做kaggle的FakeNews竞赛
