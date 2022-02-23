@@ -67,9 +67,11 @@ class Aggregate(nn.Module):
         return Y_hat
 
 class DecomposableAttention(nn.Module):
-    def __init__(self, vocab, embed_size, num_hiddens, num_inputs_attend=300,
-                 num_inputs_compare=600, num_inputs_agg=400, **kwargs):
+    def __init__(self, vocab, embed_size, num_hiddens, **kwargs):
         super(DecomposableAttention, self).__init__(**kwargs)
+        num_inputs_attend = embed_size
+        num_inputs_compare = embed_size * 2
+        num_inputs_agg = num_hiddens * 2
         self.embedding = nn.Embedding(len(vocab), embed_size)
         self.attend = Attend(num_inputs_attend, num_hiddens)
         self.compare = Compare(num_inputs_compare, num_hiddens)

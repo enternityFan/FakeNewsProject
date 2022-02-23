@@ -11,8 +11,8 @@ label_list = ['disagreed','agreed','unrelated']
 def predict_fake_news(net, vocab, premise, hypothesis):
     """预测前提和假设之间的逻辑关系"""
     net.eval()
-    premise = torch.tensor(vocab[premise], device=d2l.try_gpu())
-    hypothesis = torch.tensor(vocab[hypothesis], device=d2l.try_gpu())
+    premise = torch.tensor(vocab[premise], device=d2l.try_gpu()).long()
+    hypothesis = torch.tensor(vocab[hypothesis], device=d2l.try_gpu()).long()
     label = torch.argmax(net([premise.reshape((1, -1)),
                            hypothesis.reshape((1, -1))]), dim=1)
     return label_list[label]

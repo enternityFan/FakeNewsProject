@@ -4,8 +4,6 @@
 # @Software: PyCharm
 # C'est la vie,enjoy it! :D
 
-#from gensim.models import KeyedVectors
-#from gensim.scripts.glove2word2vec import glove2word2vec
 import pandas as pd
 import torch
 from d2l import torch as d2l

@@ -40,13 +40,13 @@ def preprocess(features):
         返回一个三个列表组成的元组:(id,premises,hypotheses)
     """
     # 去掉字符串
-    premises,hypotheses = Replace(features, ' ')
+    premises,hypotheses = Replace_ch(features, ' ')
     id = [int(line.tolist()[0]) for line in features]
 
 
     return id,premises, hypotheses
 
-def Replace(text,new): #替换列表的字符串
+def Replace_ch(text,new): #替换列表的字符串
     premises,hypotheses = [],[]
     sign = "\xa0！？｡＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘’‛“”„‟…‧﹏."
     for line in text:
@@ -94,6 +94,6 @@ print(predict_label[:5])
 # 保存submission.csv
 print("saving data....")
 df = pd.DataFrame(save_data,columns=["Id","Category"])
-df.to_csv("./Data/submission.csv",index=False)
+df.to_csv("./Data/submission_ch.csv",index=False)
 print("data saving success!!")
 

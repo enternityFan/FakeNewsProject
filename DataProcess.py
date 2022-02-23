@@ -11,19 +11,30 @@ import jieba_fast as jieba
 import torch
 import random
 import os
-def preprocess(features,label_set):
+import re
+def preprocess(features,label_set,mode='ch'):
     """传入的应该是一个[data.iloc[:,0] , data.iloc[:,1],data.iloc[:,2]]列表,还有一个label_set"""
 
 
     labels = [ label_set[line.tolist()[2]]for line in features if line.tolist()[2] in label_set]
     # 去掉字符串
-    premises,hypotheses = Replace(features, ' ')
-
+    if mode=='ch':
+        premises,hypotheses = Replace_ch(features, ' ')
+    elif mode =='en':
+        premises,hypotheses = Replace_en(features,' ')
 
     return premises, hypotheses, labels
 
+def Replace_en(text,new):
+    premises, hypotheses = [], []
+    for line in text:
+        line1,line2 = str(line[0]),str(line[1])
+        premises.append(re.sub(('[^A-Za-z0-9]+', ' ', line1).strip().lower()))
+        hypotheses.append(re.sub(('[^A-Za-z0-9]+', ' ', line2).strip().lower()))
 
-def Replace(text,new): #替换列表的字符串
+    return premises,hypotheses
+
+def Replace_ch(text,new): #替换列表的字符串
     premises,hypotheses = [],[]
     sign = "\xa0！？｡＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘’‛“”„‟…‧﹏."
     for line in text:
@@ -35,9 +46,12 @@ def Replace(text,new): #替换列表的字符串
         hypotheses.append(line2)
     return premises,hypotheses
 
-def tokenize(lines):
+def tokenize(lines,mode='ch'):
     """将文本行拆分为单词词元"""
-    return [jieba.lcut(line) for line in lines]
+    if mode=='ch':
+        return [jieba.lcut(line) for line in lines]
+    elif mode =='en':
+        return [line.split() for line in lines]
 
 class Vocab:
     """文本词表"""
@@ -86,10 +100,10 @@ class Vocab:
 #@save
 class FakeNewsDataset:
     """用于加载SNLI数据集的自定义数据集"""
-    def __init__(self, dataset, num_steps, vocab=None):
+    def __init__(self, dataset, num_steps, vocab=None,mode='ch'):
         self.num_steps = num_steps
-        all_premise_tokens = tokenize(dataset[0])
-        all_hypothesis_tokens = tokenize(dataset[1])
+        all_premise_tokens = tokenize(dataset[0],mode)
+        all_hypothesis_tokens = tokenize(dataset[1],mode)
         if vocab is None:
             self.vocab = Vocab(all_premise_tokens + \
                 all_hypothesis_tokens, min_freq=5, reserved_tokens=['<pad>'])
@@ -119,17 +133,7 @@ def count_corpus(tokens):  # @save
         tokens = [token for line in tokens for token in line]
     return collections.Counter(tokens)
 
-def load_corpus_fake_news(lines,max_tokens=-1):  #@save
-    """返回fake news数据集的词元索引列表和词表"""
 
-    tokens = tokenize(lines)
-    vocab = Vocab(tokens)
-    # 因为时光机器数据集中的每个文本行不一定是一个句子或一个段落，
-    # 所以将所有文本行展平到一个列表中
-    corpus = [vocab[token] for line in tokens for token in line]
-    if max_tokens > 0:
-        corpus = corpus[:max_tokens]
-    return corpus, vocab
 
 class Embedding:
     """Token Embedding."""
