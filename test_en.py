@@ -17,7 +17,7 @@ import pickle
 import re
 
 
-weight_path = "./Cache/epoch_20_en.pth"
+weight_path = "./Cache/epoch_10_en_scheduler.pth"
 train_vocab_path = "./Data/train_vocab_en.pkl"
 
 label_set = {'disagreed': 0, 'agreed': 1, 'unrelated': 2}

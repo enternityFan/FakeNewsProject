@@ -11,14 +11,13 @@ import DataProcess
 import Module.AttentionModel
 from torch import nn
 import Module.evalScript
-import numpy as np
-import jieba_fast as jieba
 from tqdm import *
 import os
 import pickle
+import Module.trick
 
 
-weight_path = "./Cache/epoch_20_en.pth"
+weight_path = "./Cache/epoch_10_en.pth"
 train_vocab_path = "./Data/train_vocab_en.pkl"
 test_vocab_path = "./Data/test_vocab_en.pkl"
 # 下面两个路径是进行符号预处理后的
@@ -91,7 +90,7 @@ if __name__ == "__main__":
     else:
         train = True
     #train = True
-    batch_size = 512
+    batch_size = 2048
     num_steps = 50
     if os.path.exists(train_vocab_path) and os.path.exists(test_vocab_path):
         train_vocab = DataProcess.Vocab()
@@ -125,11 +124,12 @@ if __name__ == "__main__":
     if train:
 
         print("start training...")
-        lr, num_epochs = 0.001, 20
+        lr, num_epochs = 0.001, 10
         trainer = torch.optim.Adam(net.parameters(), lr=lr)
         loss = nn.CrossEntropyLoss(reduction="none")
-        d2l.train_ch13(net, train_iter, test_iter, loss, trainer, num_epochs,
-                       devices)
+        cosScheduler = Module.trick.CosineScheduler(max_update=10, warmup_steps=5,base_lr=lr, final_lr=0.00007)
+        Module.trick.train_scheduler(net, train_iter, test_iter, loss, trainer, num_epochs,
+                       devices,scheduler=cosScheduler)
         d2l.plt.show()
         print("train success!")
         torch.save(net.state_dict(), './Cache/AttentionWeights.pth')

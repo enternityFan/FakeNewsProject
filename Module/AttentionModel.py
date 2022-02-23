@@ -19,6 +19,7 @@ def mlp(num_inputs, num_hiddens, flatten):
     net.append(nn.Dropout(0.2))
     net.append(nn.Linear(num_hiddens, num_hiddens))
     net.append(nn.ReLU())
+
     if flatten:
         net.append(nn.Flatten(start_dim=1))
     return nn.Sequential(*net)
