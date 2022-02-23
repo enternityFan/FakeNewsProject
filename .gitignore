@@ -6,7 +6,7 @@ bin-release/
 Data/test.csv
 Data/train.csv
 Data/sample_submission.csv
-Cache/
+
 # Other files and folders
 .settings/
 
