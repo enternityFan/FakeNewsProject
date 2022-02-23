@@ -50,7 +50,7 @@ def train_scheduler(net, train_iter, test_iter, loss, trainer, num_epochs,
         metric = d2l.Accumulator(4)
         for i, (features, labels) in enumerate(train_iter):
             timer.start()
-            l, acc = d2l.train_batch_ch13(
+            l, acc = train_batch(
                 net, features, labels, loss, trainer, devices)
             metric.add(l, acc, labels.shape[0], labels.numel())
             timer.stop()
@@ -77,8 +77,28 @@ def train_scheduler(net, train_iter, test_iter, loss, trainer, num_epochs,
     print(f'{metric[2] * num_epochs / timer.sum():.1f} examples/sec on '
           f'{str(devices)}')
 
+def train_batch(net, X, y, loss, trainer, devices):
+    """Train for a minibatch with mutiple GPUs (defined in Chapter 13).
 
-lr, num_epochs = 0.3, 30
-scheduler = CosineScheduler(max_update=10, base_lr=0.001, final_lr=0.00003)
-d2l.plot(torch.arange(num_epochs), [scheduler(t) for t in range(num_epochs)])
-#d2l.plt.show()
+    Defined in :numref:`sec_image_augmentation`"""
+    if isinstance(X, list):
+        # Required for BERT fine-tuning (to be covered later)
+        X = [x.to(devices[0]) for x in X]
+    else:
+        X = X.to(devices[0])
+    y = y.to(devices[0])
+    net.train()
+    trainer.zero_grad()
+    pred = net(X)
+    l = loss(pred, y)
+    l.sum().backward()
+    trainer.step()
+    train_loss_sum = l.sum()
+    train_acc_sum = d2l.accuracy(pred, y)
+    return train_loss_sum, train_acc_sum
+
+if __name__ == "__main__":
+    lr, num_epochs = 0.3, 30
+    scheduler = CosineScheduler(max_update=10, base_lr=0.001, final_lr=0.00003)
+    d2l.plot(torch.arange(num_epochs), [scheduler(t) for t in range(num_epochs)])
+    #d2l.plt.show()

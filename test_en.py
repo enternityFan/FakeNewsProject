@@ -10,6 +10,7 @@ import torch
 from d2l import torch as d2l
 import DataProcess
 import Module.AttentionModel
+import Module.AttentionModel_2
 import Module.evalScript
 import jieba_fast as jieba
 from tqdm import *
@@ -17,7 +18,7 @@ import pickle
 import re
 
 
-weight_path = "./Cache/epoch_10_en_scheduler.pth"
+weight_path = "./Cache/epoch30_en_v2_4.pth"
 train_vocab_path = "./Data/train_vocab_en.pkl"
 
 label_set = {'disagreed': 0, 'agreed': 1, 'unrelated': 2}
@@ -65,8 +66,9 @@ print("读取vocab成功")
 #print("vocab makes success!")
 
 embed_size, num_hiddens, devices = 100, 200, d2l.try_all_gpus()
-net = Module.AttentionModel.DecomposableAttention(vocab, embed_size, num_hiddens)
 
+#net = Module.AttentionModel.DecomposableAttention(vocab, embed_size, num_hiddens)
+net = Module.AttentionModel_2.DecomposableAttention(vocab,embed_size,num_hiddens)
 
 
 net.load_state_dict(torch.load(weight_path))
@@ -87,5 +89,5 @@ for i in tqdm(range(len(test_data[0]))):
 # 保存submission.csv
 print("saving data....")
 df = pd.DataFrame(save_data,columns=["Id","Category"])
-df.to_csv("./Data/submission_en.csv",index=False)
+df.to_csv("./Data/submission_epoch30_en_v2_4.csv",index=False)
 print("data saving success!!")
