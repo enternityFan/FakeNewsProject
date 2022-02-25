@@ -17,7 +17,7 @@ import pickle
 import re
 
 
-weight_path = "./Cache/epoch10_en_transformer.pth"
+weight_path = "./Cache/epoch20_en_transformer.pth"
 train_vocab_path = "./Data/train_vocab_en.pkl"
 
 label_set = {'disagreed': 0, 'agreed': 1, 'unrelated': 2}
@@ -64,7 +64,7 @@ print("读取vocab成功")
 
 embed_size, num_hiddens, devices = 100, 200, d2l.try_all_gpus()
 embed_size, devices = 100, d2l.try_all_gpus()
-num_hiddens, num_layers, dropout = 100, 1, 0.3
+num_hiddens, num_layers, dropout = 100, 2, 0.3
 ffn_num_input, ffn_num_hiddens, num_heads = 100, 100, 4
 key_size, query_size, value_size = 100, 100, 100
 norm_shape = [100]
@@ -96,5 +96,5 @@ for i in tqdm(range(len(test_data[0]))):
 # 保存submission.csv
 print("saving data....")
 df = pd.DataFrame(save_data,columns=["Id","Category"])
-df.to_csv("./Data/submission_epoch10_en_transformer.csv",index=False)
+df.to_csv("./Data/submission_epoch20_en_transformer.csv",index=False)
 print("data saving success!!")

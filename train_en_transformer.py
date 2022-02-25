@@ -88,7 +88,7 @@ if __name__ == "__main__":
     else:
         train = True
     #train = True
-    batch_size = 64
+    batch_size = 128
     num_steps = 50
     if os.path.exists(train_vocab_path) and os.path.exists(test_vocab_path):
         train_vocab = DataProcess.Vocab()
@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
     #print(vocab.type)
     embed_size,  devices = 100, d2l.try_all_gpus()
-    num_hiddens, num_layers, dropout  = 100, 1, 0.3
+    num_hiddens, num_layers, dropout  = 100, 2, 0.3
     ffn_num_input, ffn_num_hiddens, num_heads = 100, 100, 4
     key_size, query_size, value_size = 100, 100, 100
     norm_shape = [100]
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     if train:
 
         print("start training...")
-        lr, num_epochs = 0.001, 10
+        lr, num_epochs = 0.001, 20
         trainer = torch.optim.Adam(net.parameters(), lr=lr)
         loss = nn.CrossEntropyLoss(weight=torch.tensor([1.0,2.0,10.0],device=devices[0]).float(),reduction="none")
         cosScheduler = Module.trick.CosineScheduler(max_update=10, warmup_steps=5,base_lr=lr, final_lr=0.00007)
