@@ -78,12 +78,49 @@ Public score: 0.72253
 我只是把交叉熵损失的权重给改为了[1,2,10]，研究一下这个交叉熵损失的权重是不是有关系。测试结束，loss不下降，哈哈哈。。。奇奇怪怪。有点神奇啊。。。我不知道动这啥了。。就是不给我训练了。。
 可能是因为我在forward()里面错误的判断语句，那就以后test的时候注释掉这两行，train的时候注释掉那两行，这个样子。
 epoch10_en_rnn_2是这几次做实验的图，我不知道犯了什么错要这么折磨我，train_acc = 0.682...一直都是这个数。。。求求了。。loss下降吧,不过也有可能，我在网上搜，
-说是可能batch_size比较大，所以前期因为梯度平均，所以下降的速度过慢。
+说是可能batch_size比较大，所以前期因为梯度平均，所以下降的速度过慢。我把batch_size从4096调小到1024，训练还是loss不下降，不过，我把交叉熵损失的权重给去除之后。。loss终于下降了。好事。
 
 ### LSTM_Model
 这个实验的交叉损失权重是[1,2,10]的。
 前4轮迭代都没有下降loss。。第5轮开始下降了，batch_size为1024
 Score: 0.57845 Public score: 0.66675 这个结果还是可以说非常好的
+
+
+### transformer_Model（貌似是。。我也不知道是不是
+这个训练的速度是最慢最慢的，把他的训练过程给弄出来，以后闲了可以训练训练这个，因为下架速度也是很客观的。
+
+> the 0 epochs success!,the loss: 1.925,train acc 0.697
+>
+> the 1 epochs success!,the loss: 1.521,train acc 0.764
+>
+> the 2 epochs success!,the loss: 1.470,train acc 0.762
+>
+> the 3 epochs success!,the loss: 1.383,train acc 0.778
+>
+> the 4 epochs success!,the loss: 1.302,train acc 0.794
+>
+> the 5 epochs success!,the loss: 1.237,train acc 0.804
+>
+> the 6 epochs success!,the loss: 1.182,train acc 0.815
+>
+> the 7 epochs success!,the loss: 1.111,train acc 0.825
+>
+> the 8 epochs success!,the loss: 1.036,train acc 0.838
+>
+> the 9 epochs success!,the loss: 0.965,train acc 0.849
+
+Score: 0.66404 Private score: 0.57750
+
+哎,没我想象的结果好,不过也不错了其实,白亏了我训练这么久。
+
+
+
+
+
+# 其他资料
+
+
+
 
 NLLLoss
 不同损失函数的讲解

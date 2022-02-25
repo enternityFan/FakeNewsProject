@@ -96,6 +96,36 @@ class Vocab:
     def token_freqs(self):
         return self._token_freqs
 
+class FakeNewsDataset_seq2seq:
+    """用于加载SNLI数据集的自定义数据集"""
+    def __init__(self, dataset, num_steps, vocab=None,mode='ch'):
+        self.num_steps = num_steps
+        all_premise_tokens = tokenize(dataset[0],mode)
+        all_hypothesis_tokens = tokenize(dataset[1],mode)
+        if vocab is None:
+            self.vocab = Vocab(all_premise_tokens + \
+                all_hypothesis_tokens, min_freq=5, reserved_tokens=['<pad>'])
+        else:
+            self.vocab = vocab
+        self.premises = self._pad(all_premise_tokens)
+        self.hypotheses = self._pad(all_hypothesis_tokens)
+        self.prem_valid_len = (self.premises != vocab['<pad>']).type(torch.int32).sum(1)
+        self.hyp_valid_len = (self.hypotheses != vocab['<pad>']).type(torch.int32).sum(1)
+        self.labels = torch.tensor(dataset[2])
+        print('read ' + str(len(self.premises)) + ' examples')
+
+    def _pad(self, lines):
+        return torch.tensor([d2l.truncate_pad(
+            self.vocab[line], self.num_steps, self.vocab['<pad>'])
+                         for line in lines])
+
+    def __getitem__(self, idx):
+        return (self.premises[idx],self.prem_valid_len[idx], self.hypotheses[idx],self.hyp_valid_len[idx]), self.labels[idx]
+
+    def __len__(self):
+        return len(self.premises)
+
+
 
 #@save
 class FakeNewsDataset:
@@ -111,6 +141,7 @@ class FakeNewsDataset:
             self.vocab = vocab
         self.premises = self._pad(all_premise_tokens)
         self.hypotheses = self._pad(all_hypothesis_tokens)
+
         self.labels = torch.tensor(dataset[2])
         print('read ' + str(len(self.premises)) + ' examples')
 

@@ -1,17 +1,16 @@
-# @Time : 2022-02-24 16:18
+# @Time : 2022-02-25 14:10
 # @Author : Phalange
-# @File : train_en_rnn.py
+# @File : train_en_transformer.py
 # @Software: PyCharm
 # C'est la vie,enjoy it! :D
+
 
 import pandas as pd
 import torch
 from d2l import torch as d2l
 import DataProcess
-import Module.RNNModel
+import Module.TransformerModel
 from torch import nn
-import Module.evalScript
-from tqdm import *
 import os
 import pickle
 import Module.trick
@@ -68,8 +67,8 @@ def load_data(batch_size,features,num_steps=50,train_vocab=None,test_vocab=None)
         print("test data 加载成功！")
 
 
-    train_set = DataProcess.FakeNewsDataset(train_data,num_steps,train_vocab,mode='en')
-    test_set = DataProcess.FakeNewsDataset(test_data,num_steps,test_vocab,mode='en')
+    train_set = DataProcess.FakeNewsDataset_seq2seq(train_data,num_steps,train_vocab,mode='en')
+    test_set = DataProcess.FakeNewsDataset_seq2seq(test_data,num_steps,test_vocab,mode='en')
     train_iter = torch.utils.data.DataLoader(train_set, batch_size,
                                              shuffle=True,
                                              num_workers=num_workers)
@@ -89,7 +88,7 @@ if __name__ == "__main__":
     else:
         train = True
     #train = True
-    batch_size = 1024
+    batch_size = 64
     num_steps = 50
     if os.path.exists(train_vocab_path) and os.path.exists(test_vocab_path):
         train_vocab = DataProcess.Vocab()
@@ -114,24 +113,28 @@ if __name__ == "__main__":
         output_hal.close()
 
     #print(vocab.type)
-    embed_size, num_hiddens, devices = 100, 200, d2l.try_all_gpus()
-    net = Module.RNNModel.RNNModel(vocab, embed_size, num_hiddens)
+    embed_size,  devices = 100, d2l.try_all_gpus()
+    num_hiddens, num_layers, dropout  = 100, 1, 0.3
+    ffn_num_input, ffn_num_hiddens, num_heads = 100, 100, 4
+    key_size, query_size, value_size = 100, 100, 100
+    norm_shape = [100]
+
+    net = Module.TransformerModel.TransformerModel(len(vocab),key_size,query_size,value_size,num_hiddens,norm_shape,ffn_num_input,ffn_num_hiddens,num_heads,num_layers,dropout,use_bias=False)
     glove_embedding =d2l.TokenEmbedding('glove.6b.100d')
     embeds = glove_embedding[vocab.idx_to_token]
-    net.embedding.weight.data.copy_(embeds)
+    net.prem_encoder.embedding.weight.data.copy_(embeds)
+    net.hpy_encoder.embedding.weight.data.copy_(embeds)
     if train:
 
         print("start training...")
         lr, num_epochs = 0.001, 10
         trainer = torch.optim.Adam(net.parameters(), lr=lr)
-        loss = nn.CrossEntropyLoss( reduction="none")
-
+        loss = nn.CrossEntropyLoss(weight=torch.tensor([1.0,2.0,10.0],device=devices[0]).float(),reduction="none")
         cosScheduler = Module.trick.CosineScheduler(max_update=10, warmup_steps=5,base_lr=lr, final_lr=0.00007)
-        Module.trick.train_rnn_scheduler(net, train_iter, test_iter, loss, trainer, num_epochs,
+        Module.trick.train_transformer_scheduler(net, train_iter, test_iter, loss, trainer, num_epochs,
                        devices,scheduler=cosScheduler)
         d2l.plt.show()
         print("train success!")
         torch.save(net.state_dict(), './Cache/AttentionWeights.pth')
     else:
         print("只能训练。。。sorry")
-
