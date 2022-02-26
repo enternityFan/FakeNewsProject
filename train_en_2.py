@@ -10,6 +10,7 @@ import torch
 from d2l import torch as d2l
 import DataProcess
 import Module.AttentionModel_2
+import Module.AttentionModel_3
 from torch import nn
 import Module.evalScript
 from tqdm import *
@@ -120,20 +121,21 @@ if __name__ == "__main__":
     len(vocab)
 
     #print(vocab.type)
-    embed_size, num_hiddens, devices = 100, 200, d2l.try_all_gpus()
-    net = Module.AttentionModel_2.DecomposableAttention(vocab, embed_size, num_hiddens)
+    embed_size, num_hiddens, devices = 100, 100, d2l.try_all_gpus()
+    #net = Module.AttentionModel_2.DecomposableAttention(vocab, embed_size, num_hiddens)
+    net = Module.AttentionModel_3.DecomposableAttention(vocab,embed_size,num_hiddens)
     glove_embedding =d2l.TokenEmbedding('glove.6b.100d')
     embeds = glove_embedding[vocab.idx_to_token]
     net.embedding.weight.data.copy_(embeds)
     if train:
 
         print("start training...")
-        lr, num_epochs = 0.001, 30
+        lr, num_epochs = 0.001, 10
         trainer = torch.optim.Adam(net.parameters(), lr=lr)
         loss = nn.CrossEntropyLoss(weight=torch.tensor([1.0,2.0,10.0],device=devices[0]).float(),reduction='none')
         cosScheduler = Module.trick.CosineScheduler(max_update=30, warmup_steps=5,base_lr=lr, final_lr=0.0007)
         Module.trick.train_scheduler(net, train_iter, test_iter, loss, trainer, num_epochs,
-                       devices,scheduler=cosScheduler)
+                       devices)
         d2l.plt.show()
         print("train success!")
         torch.save(net.state_dict(), './Cache/AttentionWeights.pth')

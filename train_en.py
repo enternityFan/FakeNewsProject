@@ -132,7 +132,7 @@ if __name__ == "__main__":
                        devices,scheduler=cosScheduler)
         d2l.plt.show()
         print("train success!")
-        torch.save(net.state_dict(), './Cache/AttentionWeights.pth')
+        #torch.save(net.state_dict(), './Cache/AttentionWeights.pth')
     else:
         net.load_state_dict(torch.load(weight_path))
         print("模型加载成功！！准备预测。。。")

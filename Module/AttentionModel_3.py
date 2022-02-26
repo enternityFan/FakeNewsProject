@@ -1,14 +1,15 @@
-# @Time : 2022-02-23 16:20
+# @Time : 2022-02-26 17:02
 # @Author : Phalange
-# @File : AttentionModel_2.py
+# @File : AttentionModel_3.py
 # @Software: PyCharm
 # C'est la vie,enjoy it! :D
+
 
 import torch
 from torch import nn
 from torch.nn import functional as F
 from d2l import torch as d2l
-
+import math
 def mlp(num_inputs, num_hiddens, flatten):
     net = []
     net.append(nn.Dropout(0.3))
@@ -31,23 +32,24 @@ def mlp(num_inputs, num_hiddens, flatten):
     return nn.Sequential(*net)
 
 class Attend(nn.Module):
-    def __init__(self, num_inputs, num_hiddens, **kwargs):
+    def __init__(self, ffn_num_inputs, ffn_num_hiddens,ffn_num_outputs, **kwargs):
         super(Attend, self).__init__(**kwargs)
-        self.f = mlp(num_inputs, num_hiddens, flatten=False)
+        self.f = PositionWiseFFN(ffn_num_inputs, ffn_num_hiddens, ffn_num_outputs)
 
     def forward(self, A, B):
         # A/B的形状：（批量大小，序列A/B的词元数，embed_size）
         # f_A/f_B的形状：（批量大小，序列A/B的词元数，num_hiddens）
         f_A = self.f(A) # params'num:100.6K
+        f_A = torch.bmm(f_A,f_A.permute(0,2,1))
         f_B = self.f(B)
+        f_B = torch.bmm(f_B,f_B.permute(0,2,1))
         # e的形状：（批量大小，序列A的词元数，序列B的词元数）
-        e = torch.bmm(f_A, f_B.permute(0, 2, 1))
         # beta的形状：（批量大小，序列A的词元数，embed_size），
         # 意味着序列B被软对齐到序列A的每个词元(beta的第1个维度)
-        beta = torch.bmm(F.softmax(e, dim=-1), B)
+        beta = torch.bmm(F.softmax(f_B.permute(0,2,1), dim=-1), B)
         # beta的形状：（批量大小，序列B的词元数，embed_size），
         # 意味着序列A被软对齐到序列B的每个词元(alpha的第1个维度)
-        alpha = torch.bmm(F.softmax(e.permute(0, 2, 1), dim=-1), A)
+        alpha = torch.bmm(F.softmax(f_A.permute(0, 2, 1), dim=-1), A)
         return beta, alpha
 
 class Compare(nn.Module):
@@ -76,20 +78,53 @@ class Aggregate(nn.Module):
 class DecomposableAttention(nn.Module):
     def __init__(self, vocab, embed_size, num_hiddens, **kwargs):
         super(DecomposableAttention, self).__init__(**kwargs)
-        num_inputs_attend = embed_size
+
         num_inputs_compare = embed_size * 2
         num_inputs_agg = num_hiddens * 2
+        ffn_num_inputs = embed_size
+        ffn_num_hiddens = embed_size
+        ffn_num_outputs = embed_size
+        self.num_hiddens = num_hiddens
         self.embedding = nn.Embedding(len(vocab), embed_size)
-        self.attend = Attend(num_inputs_attend, num_hiddens)
+        self.pos_encoding = PositionalEncoding(num_hiddens, dropout=0.3)
+        self.attend = Attend(ffn_num_inputs, ffn_num_hiddens,ffn_num_outputs)
         self.compare = Compare(num_inputs_compare, num_hiddens)
         # 有3种可能的输出：蕴涵、矛盾和中性
         self.aggregate = Aggregate(num_inputs_agg, num_hiddens, num_outputs=3)
 
     def forward(self, X):
         premises, hypotheses = X
-        A = self.embedding(premises)
-        B = self.embedding(hypotheses)
+        A = self.pos_encoding(self.embedding(premises) * math.sqrt(self.num_hiddens))
+        B = self.pos_encoding(self.embedding(hypotheses) * math.sqrt(self.num_hiddens))
         beta, alpha = self.attend(A, B)
         V_A, V_B = self.compare(A, B, beta, alpha)
         Y_hat = self.aggregate(V_A, V_B)
         return Y_hat
+
+class PositionWiseFFN(nn.Module):
+    """基于位置的前馈网络"""
+    def __init__(self,ffn_num_input,ffn_num_hiddens,ffn_num_outputs,**kwargs):
+        super(PositionWiseFFN, self).__init__(**kwargs)
+        self.dense1 = nn.Linear(ffn_num_input,ffn_num_hiddens)
+        self.activate = nn.ReLU()
+        self.dense2 = nn.Linear(ffn_num_hiddens,ffn_num_outputs)
+
+    def forward(self,X):
+        return self.dense2(self.activate(self.dense1(X)))
+
+
+class PositionalEncoding(nn.Module):
+    """位置编码"""
+    def __init__(self,num_hiddens,dropout,max_len=10000):
+        super(PositionalEncoding, self).__init__()
+        self.dropout = nn.Dropout(dropout)
+        # 创建一个足够长的P
+        self.P = torch.zeros((1,max_len,num_hiddens))
+        X = torch.arange(max_len,dtype=torch.float32).reshape(-1,1) / torch.pow(10000,torch.arange(
+            0,num_hiddens,2,dtype=torch.float32)/num_hiddens)
+        self.P[:,:,0::2] = torch.sin(X)
+        self.P[:,:,1::2] = torch.cos(X)
+
+    def forward(self,X):
+        X = X + self.P[:,:X.shape[1],:].to(X.device)
+        return self.dropout(X)

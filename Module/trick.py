@@ -9,7 +9,7 @@ import torch
 from torch import nn
 from torch.optim import lr_scheduler
 from d2l import torch as d2l
-import tqdm
+from tqdm import *
 class CosineScheduler:
     def __init__(self, max_update, base_lr=0.01, final_lr=0,
                warmup_steps=0, warmup_begin_lr=0):
@@ -44,7 +44,7 @@ def train_scheduler(net, train_iter, test_iter, loss, trainer, num_epochs,
     animator = d2l.Animator(xlabel='epoch', xlim=[1, num_epochs], ylim=[0, 1],
                             legend=['train loss', 'train acc', 'test acc'])
     net = nn.DataParallel(net, device_ids=devices).to(devices[0])
-    for epoch in range(num_epochs):
+    for epoch in tqdm(range(num_epochs)):
         # Sum of training loss, sum of training accuracy, no. of examples,
         # no. of predictions
         metric = d2l.Accumulator(4)
@@ -72,6 +72,10 @@ def train_scheduler(net, train_iter, test_iter, loss, trainer, num_epochs,
 
         print(f'the {epoch:d} epochs success!,the loss: {metric[0] / metric[2]:.3f},train acc '
               f'{metric[1] / metric[3]:.3f}')
+        #if epoch % 10 == 0 and epoch !=0:
+        #    print("save the" + str(epoch) +"times weight..")
+        #    torch.save(net.state_dict(), './Cache/AttentionWeights'+str(epoch) + '.pth')
+
     print(f'loss {metric[0] / metric[2]:.3f}, train acc '
           f'{metric[1] / metric[3]:.3f}, test acc {test_acc:.3f}')
     print(f'{metric[2] * num_epochs / timer.sum():.1f} examples/sec on '

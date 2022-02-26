@@ -65,6 +65,14 @@ Score: 0.69389
 Public score: 0.72253
 不错不错！上升咯
 
+
+
+
+
+
+
+
+
 ### RNN_Model
 在v2的基础上修改，~~首先根据原论文《A Decomposable Attention Model for Natural Language Inference》实现with intra-sentence attention的版本论文解释参数没解释清楚，在网上搜了开源代码也没有做这个的，就放弃了~~
 
@@ -170,6 +178,35 @@ Score: 0.57766 Public score: 0.66529结果不尽人意哈哈。
 
 
 
+### AttentionModel_3
+
+#### 第一次实验
+
+这个模型跟v2的没太大区别，就是按照论文上的with intra-sentence attention版本，不过公式7没有实现，用的是公式2的计算方法，并且num_hiddens给变为了100，方便维度统一只是。
+
+
+
+我迭代了30次，有一个小乌龙：
+
+
+
+```python
+f_A = self.f(A) # params'num:100.6K
+f_A = torch.bmm(f_A,f_A.permute(0,2,1))
+f_B = self.f(A)
+f_B = torch.bmm(f_B,f_B.permute(0,2,1))
+```
+
+第三行代码我写错了。。也就是说我的模型都没有用到 假设的句子，一直是前提的句子。。就这训练的效果还是很好的，我给数据集上试试：Score: 0.60966 Public score: 0.61850就这都不低。。。哈哈哈哈哈
+
+
+
+#### 第二次实验
+
+我还迭代了100次呢。。。无语
+
+Score: 0.61073  Public score: 0.60969
+
 
 
 
@@ -194,7 +231,7 @@ Score: 0.57766 Public score: 0.66529结果不尽人意哈哈。
 | LSTM_Model          | 0.57750       | 0.66404      | 中规中矩的一个结果。                                         |    =12.2M    |
 | transformer_Model   | 0.57750       | 0.66404      | 基于transformer改的一个模型，训练速度很慢，并且结果也没预期的那么好，我以为这个结果会是最好的，哈哈，或者起码上70吧。 |              |
 | CNN_Model           | 0.57942       | 0.66770      | CNN模型，速度很快，使用有权重的损失函数的结果，好了很多。看了这参数量，怪不得训练速度快。。 |   =120.9K    |
-|                     |               |              |                                                              |              |
+| AttentionModel_3    |               |              |                                                              |              |
 
 
 

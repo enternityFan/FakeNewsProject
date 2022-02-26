@@ -11,6 +11,7 @@ from d2l import torch as d2l
 import DataProcess
 import Module.AttentionModel
 import Module.AttentionModel_2
+import Module.AttentionModel_3
 import Module.CNNModel
 import Module.evalScript
 import jieba_fast as jieba
@@ -19,7 +20,7 @@ import pickle
 import re
 
 
-weight_path = "./Cache/epoch10_en_cnn.pth"
+weight_path = "./Cache/epoch_100_en_v3_2.pth"
 train_vocab_path = "./Data/train_vocab_en.pkl"
 
 label_set = {'disagreed': 0, 'agreed': 1, 'unrelated': 2}
@@ -66,10 +67,11 @@ print("读取vocab成功")
 #vocab = DataProcess.Vocab(DataProcess.tokenize(test_data[1])+DataProcess.tokenize(test_data[2]),min_freq=5, reserved_tokens=['<pad>'])
 #print("vocab makes success!")
 
-embed_size, num_hiddens, devices = 100, 200, d2l.try_all_gpus()
+embed_size, num_hiddens, devices = 100, 100, d2l.try_all_gpus()
 
 #net = Module.AttentionModel.DecomposableAttention(vocab, embed_size, num_hiddens)
-net = Module.AttentionModel_2.DecomposableAttention(vocab,embed_size,num_hiddens)
+#net = Module.AttentionModel_2.DecomposableAttention(vocab,embed_size,num_hiddens)
+net = Module.AttentionModel_3.DecomposableAttention(vocab,embed_size,num_hiddens)
 
 
 net.load_state_dict(torch.load(weight_path))
@@ -82,7 +84,7 @@ print("模型加载成功！！准备预测。。。")
 net.eval()
 save_data = []
 for i in tqdm(range(len(test_data[0]))):
-    label = Module.evalScript.predict_fake_news(net, vocab, test_data[1][i].split(), test_data[2][i].split())
+    label = Module.evalScript.predict_fake_news_attention_v3(net, vocab, test_data[1][i].split(), test_data[2][i].split())
 
     save_data.append([test_data[0][i],label])
 
@@ -90,5 +92,5 @@ for i in tqdm(range(len(test_data[0]))):
 # 保存submission.csv
 print("saving data....")
 df = pd.DataFrame(save_data,columns=["Id","Category"])
-df.to_csv("./Data/submission_epoch30_en_v2_4.csv",index=False)
+df.to_csv("./Data/submission_epoch_100_en_v3_2.csv",index=False)
 print("data saving success!!")
