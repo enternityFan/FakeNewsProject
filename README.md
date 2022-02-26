@@ -162,9 +162,11 @@ Score: 0.57766 Public score: 0.66529结果不尽人意哈哈。
 
 ### Attention+CNN Model
 
-在最初的Attention_Model的基础上，把mlp给替换成cnn进行尝试。
+~~在最初的Attention_Model的基础上，把mlp给替换成cnn进行尝试。~~
 
-f()函数不改变输入的大小。g()函数也不改变输入的大小。
+~~f()函数不改变输入的大小。g()函数也不改变输入的大小。~~
+
+这个实验不做了，想了一会，没想好。
 
 
 
