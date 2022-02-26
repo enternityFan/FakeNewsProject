@@ -124,6 +124,50 @@ Score: 0.57612 Public score: 0.64924
 
 好吧，更垃圾了。。
 
+### CNN_Model
+
+这个训练速度挺快的嘿！
+
+#### 第一次实验
+
+参数设置就不说了，这个的train代码是和train_en里面的一模一样，test_en也是一样的，这两个的读取数据的要求都一样，真好
+
+Score: 0.57215 Public score: 0.60753
+
+数据比我想象的要垃圾，因为我在自己的电脑上训练感觉还是很不错的。。哎。不过把也是，反正我感觉我的这个网络的结构，根本没有获得两句话的关系。。
+
+```python
+# kernel_sizes, nums_channels = [3,4,5], [100, 100, 100] # v1和v2的数据
+```
+
+#### 第二次实验
+
+只是修改了交叉熵损失函数让他有权重了，我还是认为这个交叉熵损失的权重是挺好用的。
+
+Score: 0.57942 Public score: 0.66770
+
+```python
+# kernel_sizes, nums_channels = [3,4,5], [100, 100, 100] # v1和v2的数据
+```
+
+#### 第三次实验
+
+稍微修改一下网路的卷积核的步数，并且提高了batch_size的大小，训练30次。
+
+```python
+kernel_sizes, nums_channels = [3,5,7,9,11], [100, 100, 100]
+```
+
+Score: 0.57766 Public score: 0.66529结果不尽人意哈哈。
+
+### Attention+CNN Model
+
+在最初的Attention_Model的基础上，把mlp给替换成cnn进行尝试。
+
+f()函数不改变输入的大小。g()函数也不改变输入的大小。
+
+
+
 # 实验结果整理
 
 注：没有特殊说明，实验结果都是在迭代10次得到的。
@@ -137,6 +181,8 @@ Score: 0.57612 Public score: 0.64924
 | RNN_Model           | 0.51205       | 0.55162      | 这个结果还是很差的，并且有一个很麻烦的问题，不过也可能是我batch_size设置的太大了，导致前几批次loss不下降，并且修改lr后会10次迭代loss都不下降 |
 | LSTM_Model          | 0.57750       | 0.66404      | 中规中矩的一个结果。                                         |
 | transformer_Model   | 0.57750       | 0.66404      | 基于transformer改的一个模型，训练速度很慢，并且结果也没预期的那么好，我以为这个结果会是最好的，哈哈，或者起码上70吧。 |
+| CNN_Model           | 0.57942       | 0.66770      | CNN模型，速度很快，使用有权重的损失函数的结果，好了很多。    |
+|                     |               |              |                                                              |
 
 
 
@@ -155,6 +201,16 @@ https://zhuanlan.zhihu.com/p/61379965
 
 
 孪生神经网络
+
+
+
+## nn.Sequential与nn.ModuleList的区别
+
+nn.ModuleList 这个类，你可以把任意 nn.[Module](https://so.csdn.net/so/search?q=Module&spm=1001.2101.3001.7020) 的子类添加到这个list里面，方法和Python 自带的 list 一样，但与一般的list的区别在于，加入到 nn.ModuleList 里面的 module 是会注册到整个网络上的，同时 module 的 parameters 也会自动添加到整个网络中。它是一个储存不同 module，并自动将每个 module 的 parameters 添加到网络之中的容器。但是，我们需要注意到，nn.ModuleList 并没有定义一个网络，它只是将不同的模块储存在一起，这些模块之间并没有什么先后顺序可言，执行顺序还是按照forward里面的写法来执行的。
+
+nn.Sequential，不同于 nn.ModuleList，它已经实现的 forward 函数，而且里面的模块是按照顺序进行排列的，所以我们必须确保前一个模块的输出大小和下一个模块的输入大小是一致的，并且需要保证顺序，因为不能够再定制forward函数的顺序。
+
+参考《PyTorch 中的 ModuleList 和 Sequential: 区别和使用场景》csdn博客。
 
 
 

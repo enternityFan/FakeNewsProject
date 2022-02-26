@@ -11,6 +11,7 @@ from d2l import torch as d2l
 import DataProcess
 import Module.AttentionModel
 import Module.AttentionModel_2
+import Module.CNNModel
 import Module.evalScript
 import jieba_fast as jieba
 from tqdm import *
@@ -18,7 +19,7 @@ import pickle
 import re
 
 
-weight_path = "./Cache/epoch30_en_v2_4.pth"
+weight_path = "./Cache/epoch10_en_cnn.pth"
 train_vocab_path = "./Data/train_vocab_en.pkl"
 
 label_set = {'disagreed': 0, 'agreed': 1, 'unrelated': 2}

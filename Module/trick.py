@@ -44,7 +44,7 @@ def train_scheduler(net, train_iter, test_iter, loss, trainer, num_epochs,
     animator = d2l.Animator(xlabel='epoch', xlim=[1, num_epochs], ylim=[0, 1],
                             legend=['train loss', 'train acc', 'test acc'])
     net = nn.DataParallel(net, device_ids=devices).to(devices[0])
-    for epoch in quit(range(num_epochs)):
+    for epoch in range(num_epochs):
         # Sum of training loss, sum of training accuracy, no. of examples,
         # no. of predictions
         metric = d2l.Accumulator(4)
