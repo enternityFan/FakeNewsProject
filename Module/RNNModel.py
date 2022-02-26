@@ -48,7 +48,7 @@ class RNNModel(nn.Module):
         B = self.embedding(hypotheses)
         # (batch_size,A/B的词元数,embed_size)变为(A/B的词元数，batch_size,embed_size)
 
-        Y_hpy,state_hpy = self.rnn_hpy(A,state)
+        Y_hpy,state_hpy = self.rnn_hpy(A,state) # params'num:4015K
         Y_prem,state_prem = self.rnn_prem(B,state)
         #if self.mode == 'predict':
         #    state_hpy = torch.squeeze(state_hpy,dim=1)
@@ -56,8 +56,8 @@ class RNNModel(nn.Module):
         #elif self.mode == 'train':
         state_hpy = torch.squeeze(state_hpy)
         state_prem = torch.squeeze(state_prem)
-        output1 = self.mlp(torch.cat([state_hpy,state_prem],1))
-        output = self.linear(output1)
+        output1 = self.mlp(torch.cat([state_hpy,state_prem],1))  # params'num:160.K
+        output = self.linear(output1) # params'num: 600
        # output = F.softmax(output,dim=-1)
         return output
 

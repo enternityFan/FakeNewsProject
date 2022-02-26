@@ -30,9 +30,10 @@ class TextCNN(nn.Module):
         embeddings = embeddings.permute(0,2,1)
         # 每一个一维卷积层在最大时间汇聚层合并后，获得的张量形状是（批量大小，通道数，1）
         # 删除最后一个维度并沿通道维度连结
+        # params'num:当conv为[3,4,5]时,输入通道是[100,100,100]时，120K
         encoding = torch.cat([
             torch.squeeze(self.active(self.pool(conv(embeddings))),dim=-1)
             for conv in self.convs],dim=1)
-        outputs = self.decoder(self.dropout(encoding))
+        outputs = self.decoder(self.dropout(encoding)) # params' num: 900
         return outputs
 

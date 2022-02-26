@@ -41,8 +41,8 @@ class TransformerModel(nn.Module):
                                                ffn_num_input,ffn_num_hiddens,num_heads,num_layers,dropout,use_bias)
         self.hpy_encoder = TransformerEncoder(vocab_size,key_size,query_size,value_size,num_hiddens,norm_shape,
                                                ffn_num_input,ffn_num_hiddens,num_heads,num_layers,dropout,use_bias)
-        self.full_encoder = TransformerEncoder(vocab_size,key_size,query_size,value_size,num_hiddens,norm_shape,
-                                               ffn_num_input,ffn_num_hiddens,num_heads,num_layers,dropout,use_bias)
+        #self.full_encoder = TransformerEncoder(vocab_size,key_size,query_size,value_size,num_hiddens,norm_shape,
+        #                                       ffn_num_input,ffn_num_hiddens,num_heads,num_layers,dropout,use_bias)
         self.addAttention = AdditiveAttention(key_size,query_size,num_hiddens,dropout)
         self.dense = nn.Linear(num_hiddens,3) # 全连接层
         #self.mlp = mlp()
@@ -54,7 +54,7 @@ class TransformerModel(nn.Module):
         # 做一个合理的叠加的操作
         prem_hpy = torch.cat([premises,hypotheses],dim=1) # prem_hpy的shape:(batch_size,A+B的词元数，词向量）
         prem_hpy_valid_len = torch.tensor([max(prem_valid_len[i],hpy_valid_len[i]) for i in range(len(prem_valid_len))],device=premises.device)
-        output = self.addAttention(prem_hpy,prem_hpy,prem_hpy,prem_hpy_valid_len)
+        output = self.addAttention(prem_hpy,prem_hpy,prem_hpy,prem_hpy_valid_len) # params'num:20.1K
 
         #prem_hpy = self.full_encoder(prem_hpy,prem_hpy_valid_len)
         output = output.sum(dim=2) # output.shape = (batch_size,A+B的词元数）

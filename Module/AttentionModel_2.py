@@ -38,7 +38,7 @@ class Attend(nn.Module):
     def forward(self, A, B):
         # A/B的形状：（批量大小，序列A/B的词元数，embed_size）
         # f_A/f_B的形状：（批量大小，序列A/B的词元数，num_hiddens）
-        f_A = self.f(A)
+        f_A = self.f(A) # params'num:100.6K
         f_B = self.f(B)
         # e的形状：（批量大小，序列A的词元数，序列B的词元数）
         e = torch.bmm(f_A, f_B.permute(0, 2, 1))
@@ -56,14 +56,14 @@ class Compare(nn.Module):
         self.g = mlp(num_inputs, num_hiddens, flatten=False)
 
     def forward(self, A, B, beta, alpha):
-        V_A = self.g(torch.cat([A, beta], dim=2))
+        V_A = self.g(torch.cat([A, beta], dim=2)) # params'num:120.6k
         V_B = self.g(torch.cat([B, alpha], dim=2))
         return V_A, V_B
 class Aggregate(nn.Module):
     def __init__(self, num_inputs, num_hiddens, num_outputs, **kwargs):
         super(Aggregate, self).__init__(**kwargs)
-        self.h = mlp(num_inputs, num_hiddens, flatten=True)
-        self.linear = nn.Linear(num_hiddens, num_outputs)
+        self.h = mlp(num_inputs, num_hiddens, flatten=True) # 160.6K
+        self.linear = nn.Linear(num_hiddens, num_outputs) # 600
 
     def forward(self, V_A, V_B):
         # 对两组比较向量分别求和

@@ -31,7 +31,7 @@ class LSTMRNNModel(nn.Module):
         self.mode = mode
         self.lstm_hpy = nn.LSTM(embed_size,num_hiddens,batch_first=True)
         self.lstm_prem = nn.LSTM(embed_size,num_hiddens,batch_first=True)
-        self.mlp = mlp(num_hiddens * 2,200)
+        self.mlp = mlp(num_hiddens * 2,200) #
         self.vocab_size = len(vocab)
         self.num_hiddens = self.lstm_hpy.hidden_size
         self.embedding = nn.Embedding(len(vocab),embed_size)
@@ -46,7 +46,7 @@ class LSTMRNNModel(nn.Module):
         B = self.embedding(hypotheses)
         # (batch_size,A/B的词元数,embed_size)变为(A/B的词元数，batch_size,embed_size)
 
-        Y_hpy, state_hpy = self.lstm_hpy(A, state)
+        Y_hpy, state_hpy = self.lstm_hpy(A, state)# # params'num:12040K
         Y_prem, state_prem = self.lstm_prem(B, state)
         if self.mode == 'predict':
             state_hpy = torch.squeeze(state_hpy[0], dim=1)
@@ -54,8 +54,8 @@ class LSTMRNNModel(nn.Module):
         elif self.mode == 'train':
             state_hpy = torch.squeeze(state_hpy[0])
             state_prem = torch.squeeze(state_prem[0])
-        output1 = self.mlp(torch.cat([state_hpy, state_prem], 1))
-        output = self.linear(output1)
+        output1 = self.mlp(torch.cat([state_hpy, state_prem], 1)) # params'num:160k
+        output = self.linear(output1)# params'num:600
         # output = F.softmax(output,dim=-1)
         return output
 
